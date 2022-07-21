@@ -1,0 +1,13 @@
+@(information : String)
+@main("importMassSpectrometryFile") {
+
+    @helper.form(action = routes.HomeController.upload(), Symbol("enctype") -> "multipart/form-data") {
+        <input type="file" id="massSpectrometryFile" name="massSpectrometryFile">
+        <input type="submit" value="upload file"/>
+    }
+<p>
+    <input id="text" type="text">
+    @information
+    </input>
+</p>
+}
