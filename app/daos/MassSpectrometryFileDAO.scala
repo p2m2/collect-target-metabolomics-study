@@ -1,0 +1,37 @@
+package daos
+
+import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Inject
+import models.MassSpectrometryFile
+import play.api.db.slick.DatabaseConfigProvider
+import play.api.db.slick.HasDatabaseConfigProvider
+import play.db.NamedDatabase
+import slick.jdbc.H2Profile
+
+class MassSpectrometryFileDAO @Inject()
+    (@NamedDatabase("metabolomics")
+      protected val dbConfigProvider: DatabaseConfigProvider)
+    (implicit executionContext: ExecutionContext)
+  extends HasDatabaseConfigProvider[H2Profile] {
+
+  import profile.api._
+
+  def findAll(): Seq[MassSpectrometryFile] = ???
+  def findById(id: String) : MassSpectrometryFile = ???
+
+  def all(): Future[Seq[MassSpectrometryFile]] = db.run(TableQuery[MassSpectrometryFileTable].result)
+
+  def insert(msfile: MassSpectrometryFile): Future[Unit] = {
+    db.run(TableQuery[MassSpectrometryFileTable] += msfile).map { _ => () }
+  }
+  def update(msfile: MassSpectrometryFile): Future[Unit] = ???
+
+
+  private class MassSpectrometryFileTable(tag: Tag) extends Table[MassSpectrometryFile](tag, "MassSpectrometryFile") {
+
+    def id = column[String]("ID", O.PrimaryKey)
+    def name = column[String]("NAME")
+
+    def * = (id, name) <> (MassSpectrometryFile.tupled, MassSpectrometryFile.unapply)
+  }
+}

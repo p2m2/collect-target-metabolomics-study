@@ -9,9 +9,14 @@ scalaVersion := "2.13.8"
 
 libraryDependencies ++= Seq(
   guice,
-    "com.github.p2m2" % "p2m2tools_2.13" % "0.2.0",
+    "com.github.p2m2" %% "p2m2tools" % "develop-SNAPSHOT",
+    "com.typesafe.play" %% "play-slick" % "5.0.2",
+    "com.typesafe.play" %% "play-slick-evolutions" % "5.0.2",
+    "com.h2database" % "h2" % "2.1.212",
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
 )
+
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "fr.inrae.p2m2.controllers._"

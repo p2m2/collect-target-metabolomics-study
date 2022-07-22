@@ -1,17 +1,13 @@
 package controllers
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpRequest
+import daos.MassSpectrometryFileDAO
 import fr.inrae.metabolomics.p2m2.parser.{GCMSParser, OpenLabCDSParser, QuantifyCompoundSummaryReportMassLynxParser, XcaliburXlsParser}
-import play.i18n.Messages
-import play.i18n.MessagesApi
-
-import javax.inject._
-import play.api._
+import models.MassSpectrometryFile
 import play.api.mvc._
-import play.api.data.Forms._
 
 import java.nio.file.Paths
+import javax.inject._
+import scala.concurrent.ExecutionContext
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -19,8 +15,9 @@ import java.nio.file.Paths
  */
 @Singleton
 class HomeController @Inject()(
+                                val msfiles : MassSpectrometryFileDAO,
                                 val controllerComponents: ControllerComponents
-                              ) extends BaseController {
+                              ) (implicit ec : ExecutionContext) extends BaseController {
 
   /**
    * Create an Action to render an HTML page.
@@ -59,13 +56,23 @@ class HomeController @Inject()(
           "<br/>QuantifyCompoundSummaryReportMassLynxParser:"+QuantifyCompoundSummaryReportMassLynxParser.sniffFile(s"/tmp/$filename") +
           "<br/>XcaliburXlsParser:"+XcaliburXlsParser.sniffFile(s"/tmp/$filename")
 
+          msfiles.insert(MassSpectrometryFile(fileSize.toString,filename.toString))
           Ok(views.html.importMassSpectrometryFile(information))
         }
         .getOrElse {
           println("================  ERREUR ==================")
-          Redirect(routes.HomeController.index).flashing("error" -> "Missing file")
+          Redirect(routes.HomeController.index()).flashing("error" -> "Missing file")
         }
+      }
     }
 
-  }
+      def displayTableWithMassSpectrometryFiles() = Action.async {
+        msfiles.all().map {
+          case msfiles: Seq[MassSpectrometryFile] => Ok(views.html.msfiles(msfiles))
+        } recover {
+          case e => Ok(e.getMessage)
+        }
+      }
+
+
 }
