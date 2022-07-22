@@ -1,3 +1,8 @@
 package models
 
-case class MassSpectrometryFile(id : String, name  : String)
+case class MassSpectrometryFile(
+                                 id : Long=0,
+                                 name  : String,
+                                 fileContent: String,
+                                 className : String,
+                               )

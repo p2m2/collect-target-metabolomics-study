@@ -1,6 +1,24 @@
 @(listMSFiles : Seq[MassSpectrometryFile])
 @main("msfiles") {
 
-<br/>
-@listMSFiles
+<table>
+    <thead>
+    <tr>
+        <th colspan="">MS Files</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(msFile <- listMSFiles ) {
+    <tr>
+        <td>@msFile.id</td>
+        <td>@msFile.name</td>
+        <td>@msFile.className</td>
+    </tr>
+    }
+
+    </tbody>
+</table>
+<a href="importMSF?information=hello">Import files</a>
+<a href="preview">Export preview</a>
+<a href="">Export as XLS</a>
 }

@@ -27,11 +27,15 @@ class MassSpectrometryFileDAO @Inject()
   def update(msfile: MassSpectrometryFile): Future[Unit] = ???
 
 
-  private class MassSpectrometryFileTable(tag: Tag) extends Table[MassSpectrometryFile](tag, "MassSpectrometryFile") {
+  private class MassSpectrometryFileTable(tag: Tag)
+    extends Table[MassSpectrometryFile](tag, "MassSpectrometryFile") {
 
-    def id = column[String]("ID", O.PrimaryKey)
+    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def name = column[String]("NAME")
+    def fileContent = column[String]("FILECONTENT")
+    def className= column[String]("CLASSNAME")
 
-    def * = (id, name) <> (MassSpectrometryFile.tupled, MassSpectrometryFile.unapply)
+    def * =
+      (id, name, fileContent, className) <> (MassSpectrometryFile.tupled, MassSpectrometryFile.unapply)
   }
 }

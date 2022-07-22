@@ -1,10 +1,16 @@
 # collect-target-metabolomics-study
 
+```shell
+sbt run 
+``` 
+
+http://localhost:9000/
 
 ## notes
 
 h2 database test
-``` 
+
+```shell
 sbt
 h2-browser
 ```
