@@ -75,6 +75,12 @@ class HomeController @Inject()(
         }
       }
     }
+  def delete(idMsFile : Long): Action[AnyContent] = Action {
+    implicit request: Request[AnyContent] => {
+      msfiles.delete(idMsFile)
+      Ok(views.html.importMassSpectrometryFile())
+    }
+  }
 
   def preview(): Action[AnyContent] = Action.async {
     msfiles.all().map {

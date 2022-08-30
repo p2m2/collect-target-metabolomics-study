@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
 )
 
+routesImport += "fr.inrae.metabolomics.p2m2.format._"
+
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 // Adds additional packages into Twirl

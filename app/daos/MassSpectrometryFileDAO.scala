@@ -26,6 +26,12 @@ class MassSpectrometryFileDAO @Inject()
   }
   def update(msfile: MassSpectrometryFile): Future[Unit] = ???
 
+  def delete(idMsFile : Long) : Future[Unit] = {
+    val query = TableQuery[MassSpectrometryFileTable].filter( _.id === idMsFile)
+    val action = query.delete
+    db.run(action).map( _ => ())
+  }
+
 
   private class MassSpectrometryFileTable(tag: Tag)
     extends Table[MassSpectrometryFile](tag, "MassSpectrometryFile") {

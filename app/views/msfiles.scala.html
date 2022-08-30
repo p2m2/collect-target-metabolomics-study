@@ -1,5 +1,5 @@
 @(listMSFiles : Seq[MassSpectrometryFile])
-@main("msfiles") {
+@main("List of mass spectrometer files to integrate") {
 
 <table>
     <thead>
@@ -13,6 +13,7 @@
         <td>@msFile.id</td>
         <td>@msFile.name</td>
         <td>@msFile.className</td>
+        <td><a href="/delete/@msFile.id"><span class="material-symbols-outlined">delete</span></a></td>
     </tr>
     }
 
