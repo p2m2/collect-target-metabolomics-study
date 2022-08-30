@@ -36,11 +36,15 @@ class HomeController @Inject()(
     Ok(views.html.index())
   }
 
-  def importMassSpectrometryFile() = Action {
-      Ok(views.html.importMassSpectrometryFile())
+  def importMassSpectrometryFile() = Action.async {
+    msfiles.all().map {
+      msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+    } recover {
+      case e => Ok(e.getMessage)
+    }
   }
 
-  def upload() = Action(parse.multipartFormData) {
+  def upload() = Action(parse.multipartFormData).async {
     request => {
 
       /*Ok(views.html.importMassSpectrometryFile())*/
@@ -70,20 +74,31 @@ class HomeController @Inject()(
             }
           }
         }
-        Ok(views.html.importMassSpectrometryFile())
-//      preview()
+        msfiles.all().map {
+          msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+        } recover {
+          case e => Ok(e.getMessage)
+        }
       }
     }
-  def delete(idMsFile : Long): Action[AnyContent] = Action {
+  def delete(idMsFile : Long): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] => {
       msfiles.delete(idMsFile)
-      Ok(views.html.importMassSpectrometryFile())
+      msfiles.all().map {
+        msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+      } recover {
+        case e => Ok(e.getMessage)
+      }
     }
   }
 
-  def clean() : Action[AnyContent] = Action {
+  def clean() : Action[AnyContent] = Action.async {
     msfiles.clean()
-    Ok(views.html.importMassSpectrometryFile())
+    msfiles.all().map {
+      msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+    } recover {
+      case e => Ok(e.getMessage)
+    }
   }
 
   def exportXLS() : Action[AnyContent] = Action.async {
@@ -109,13 +124,5 @@ class HomeController @Inject()(
       case e => Ok(e.getMessage)
     }
   }
-  def displayTableWithMassSpectrometryFiles(): Action[AnyContent] = Action.async {
-        msfiles.all().map {
-          msfiles: Seq[MassSpectrometryFile] => Ok(views.html.msfiles(msfiles))
-        } recover {
-          case e => Ok(e.getMessage)
-        }
-      }
-
 
 }

@@ -1,0 +1,7 @@
+Dockerfile
+.git
+.bsp
+.idea
+.g8
+target
+.vscode

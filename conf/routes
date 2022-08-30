@@ -10,7 +10,6 @@ GET    /importMSF                  controllers.HomeController.importMassSpectrom
 + nocsrf
 POST   /upload                     controllers.HomeController.upload()
 GET    /delete/:idMsFileLong       controllers.HomeController.delete(idMsFileLong : Long)
-GET    /msFiles                    controllers.HomeController.displayTableWithMassSpectrometryFiles()
 GET    /preview                    controllers.HomeController.preview()
 GET    /clean                      controllers.HomeController.clean()
 GET    /exportXLS                  controllers.HomeController.exportXLS()
