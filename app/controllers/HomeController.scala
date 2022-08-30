@@ -1,11 +1,10 @@
 package controllers
 
 import daos.MassSpectrometryFileDAO
-import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSet}
+import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSet, MassSpectrometryResultSetFactory}
 import fr.inrae.metabolomics.p2m2.parser._
 import models.MassSpectrometryFile
 import play.api.mvc._
-import upickle.default._
 
 import java.nio.file.Paths
 import javax.inject._
@@ -32,8 +31,8 @@ class HomeController @Inject()(
     Ok(views.html.index())
   }
 
-  def importMassSpectrometryFile(information: String="") = Action {
-      Ok(views.html.importMassSpectrometryFile(information))
+  def importMassSpectrometryFile() = Action {
+      Ok(views.html.importMassSpectrometryFile())
   }
 
   def upload() = Action(parse.multipartFormData) {
@@ -61,31 +60,14 @@ class HomeController @Inject()(
           val ms : Option[MassSpectrometryResultSet] = ParserManager.buildMassSpectrometryObject(s"/tmp/$filename")
           ms.map {
             x => {
-          /**
-           * ================ TODO =====================
-           * Utiliser upickle pour serialiser les types GCMS,OpenLabCDS,...
-           *
-           * GCMS.HeaderFileField.HeaderFileField dit etre egalement seriaiser etc....
-           * à intégrer dans p2mtools ?
-           *
-              val rw1: ReadWriter[GCMS] = macroRW
-              val rw2: ReadWriter[OpenLabCDS] = macroRW
-              val rw3: ReadWriter[QuantifyCompoundSummaryReportMassLynx] = macroRW
-              val rw4: ReadWriter[Xcalibur] = macroRW
-              val rw : ReadWriter[MassSpectrometryResultSet]  = ReadWriter.merge(rw1,rw2,rw3,rw4)
-
-              msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=write(x)(rw),
-                className = x.getClass.getSimpleName))
-
-           */
-             println(x.getClass.getSimpleName)
-             msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=x.toString,
+            val stringifyMs = MassSpectrometryResultSetFactory.stringify(x)
+             msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=stringifyMs,
                className = x.getClass.getSimpleName))
             }
 
           }
 
-          Ok(views.html.importMassSpectrometryFile(information))
+          Ok(views.html.importMassSpectrometryFile())
         }
         .getOrElse {
           println("================  ERREUR ==================")
@@ -94,35 +76,24 @@ class HomeController @Inject()(
       }
     }
 
-  def preview() = Action.async {
+  def preview(): Action[AnyContent] = Action.async {
     msfiles.all().map {
-      case msfiles: Seq[MassSpectrometryFile] =>
-        val obj : GenericP2M2 =
+      msfiles: Seq[MassSpectrometryFile] =>
+        val obj: GenericP2M2 =
           msfiles
-            .map( (msf : MassSpectrometryFile) => {
-              /**
-               * TODO Ne fonctionne pas
-               *
-               * Utiliser la serialisation upicle pour deserialiser un object provenant de la base et creer à nouveau l objet d origine (GCMS, etc...)
-               */
-              val clazz = Class.forName(msf.className)
-              val instance = clazz.getDeclaredConstructor().newInstance()
-              instance.asInstanceOf[GenericP2M2]
-             // val rw: ReadWriter[instance.type] = macroRW
-              //read[instance.type](msf.fileContent)(rw)
-              //val stock = ois.readObject.asInstanceOf[Stock]
+            .flatMap((msf: MassSpectrometryFile) => {
+              MassSpectrometryResultSetFactory.build(msf.fileContent)
             })
-            /** TODO On doit  la fin faire la conversion GenericP2M2 et faire l affichage du preview !!!! */
-          .foldLeft(GenericP2M2(Seq()))( (accumulator,v) => accumulator +v)
+            .foldLeft(GenericP2M2(Seq()))((accumulator, v) => accumulator + v)
 
-        Ok(views.html.preview(obj.toString))
+        Ok(views.html.preview(obj))
     } recover {
       case e => Ok(e.getMessage)
     }
   }
-  def displayTableWithMassSpectrometryFiles() = Action.async {
+  def displayTableWithMassSpectrometryFiles(): Action[AnyContent] = Action.async {
         msfiles.all().map {
-          case msfiles: Seq[MassSpectrometryFile] => Ok(views.html.msfiles(msfiles))
+          msfiles: Seq[MassSpectrometryFile] => Ok(views.html.msfiles(msfiles))
         } recover {
           case e => Ok(e.getMessage)
         }

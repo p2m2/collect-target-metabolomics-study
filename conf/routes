@@ -5,7 +5,7 @@
 
 # An example controller showing a sample home page
 GET    /                           controllers.HomeController.index()
-GET    /importMSF                  controllers.HomeController.importMassSpectrometryFile(information)
+GET    /importMSF                  controllers.HomeController.importMassSpectrometryFile()
 # security removed
 + nocsrf
 POST   /upload                     controllers.HomeController.upload()
