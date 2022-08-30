@@ -12,6 +12,7 @@ POST   /upload                     controllers.HomeController.upload()
 GET    /delete/:idMsFileLong       controllers.HomeController.delete(idMsFileLong : Long)
 GET    /msFiles                    controllers.HomeController.displayTableWithMassSpectrometryFiles()
 GET    /preview                    controllers.HomeController.preview()
-
+GET    /clean                      controllers.HomeController.clean()
+GET    /exportXLS                  controllers.HomeController.exportXLS()
 # Map static resources from the /public folder to the /assets URL path
 GET    /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

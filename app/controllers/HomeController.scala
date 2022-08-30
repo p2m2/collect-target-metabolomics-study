@@ -1,11 +1,16 @@
 package controllers
 
+import akka.stream.scaladsl.{Source, StreamConverters}
+import akka.util.ByteString
 import daos.MassSpectrometryFileDAO
 import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSet, MassSpectrometryResultSetFactory}
 import fr.inrae.metabolomics.p2m2.parser._
+import fr.inrae.metabolomics.p2m2.stream.ExportData
 import models.MassSpectrometryFile
+import play.api.http.HttpEntity
 import play.api.mvc._
 
+import java.io.ByteArrayInputStream
 import java.nio.file.Paths
 import javax.inject._
 import scala.concurrent.ExecutionContext
@@ -37,14 +42,13 @@ class HomeController @Inject()(
 
   def upload() = Action(parse.multipartFormData) {
     request => {
-      /*
-      println(request.body.asFormUrlEncoded)
-      val formData = request.body.asMultipartFormData
-      println(formData)
-      Ok(views.html.importMassSpectrometryFile())*/
-      request.body
-        .file("massSpectrometryFile")
+
+      /*Ok(views.html.importMassSpectrometryFile())*/
+      request
+        .body
+        .files
         .map { msfile =>
+          println(msfile)
           // only get the last part of the filename
           // otherwise someone can send a path like ../../home/foo/bar.txt to write to other files on the system
           val filename    = Paths.get(msfile.filename).getFileName
@@ -64,15 +68,10 @@ class HomeController @Inject()(
              msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=stringifyMs,
                className = x.getClass.getSimpleName))
             }
-
           }
-
-          Ok(views.html.importMassSpectrometryFile())
         }
-        .getOrElse {
-          println("================  ERREUR ==================")
-          Redirect(routes.HomeController.index()).flashing("error" -> "Missing file")
-        }
+        Ok(views.html.importMassSpectrometryFile())
+//      preview()
       }
     }
   def delete(idMsFile : Long): Action[AnyContent] = Action {
@@ -82,17 +81,30 @@ class HomeController @Inject()(
     }
   }
 
-  def preview(): Action[AnyContent] = Action.async {
-    msfiles.all().map {
-      msfiles: Seq[MassSpectrometryFile] =>
-        val obj: GenericP2M2 =
-          msfiles
-            .flatMap((msf: MassSpectrometryFile) => {
-              MassSpectrometryResultSetFactory.build(msf.fileContent)
-            })
-            .foldLeft(GenericP2M2(Seq()))((accumulator, v) => accumulator + v)
+  def clean() : Action[AnyContent] = Action {
+    msfiles.clean()
+    Ok(views.html.importMassSpectrometryFile())
+  }
 
-        Ok(views.html.preview(obj))
+  def exportXLS() : Action[AnyContent] = Action.async {
+    msfiles.getMergeGenericP2M2().map {
+      (obj: GenericP2M2) => {
+        val bs = ExportData.xlsP2M2(obj)
+        val source: Source[ByteString, _] = StreamConverters.fromInputStream(() => new ByteArrayInputStream(bs.toByteArray))
+        val contentLength : Option[Long] = Some(bs.size())
+        Result(
+          header = ResponseHeader(200, Map.empty),
+          body = HttpEntity.Streamed(source, contentLength,Some("application/vnd.ms-excel"))
+        )
+      }
+    } recover {
+      case e => Ok(e.getMessage)
+    }
+  }
+
+  def preview(): Action[AnyContent] = Action.async {
+    msfiles.getMergeGenericP2M2().map {
+      (obj : GenericP2M2) => Ok(views.html.preview(obj))
     } recover {
       case e => Ok(e.getMessage)
     }

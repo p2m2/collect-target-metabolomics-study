@@ -1,8 +1,8 @@
 @main("Embed a mass spectrometer results file") {
-
+<p><i>Xcalibur Software - Thermo Fisher Scientific, GCMS, OpenLabCDS software - agilent, MassLynx - waters</i>
+</p>
     @helper.form(action = routes.HomeController.upload(), Symbol("enctype") -> "multipart/form-data") {
-        <input type="file" id="massSpectrometryFile" name="massSpectrometryFile">
+        <input type="file" id="massSpectrometryFile" name="massSpectrometryFile" multiple>
         <input type="submit" value="upload file"/>
     }
-
 }
