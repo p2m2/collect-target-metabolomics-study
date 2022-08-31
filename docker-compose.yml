@@ -4,7 +4,7 @@ services:
     build:
       context: .
   nginx:
-    image: nginx:1.17
+    image: nginx:1.23
     volumes:
       - ./nginx_conf/nginx.conf:/tmp/nginx.conf
       - ./nginx_conf/htpasswd:/etc/nginx/.htpasswd
