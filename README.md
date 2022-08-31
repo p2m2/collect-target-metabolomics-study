@@ -17,7 +17,8 @@ h2-browser
 
 # Docker
 
-- docker run -p 9000:80 -t test
+- docker-compose build
+- docker-compose up -d
 
 ## utilisation Slick/Evolution/H2
 - Ajout d'un DAO : MassSpectrometryFile
