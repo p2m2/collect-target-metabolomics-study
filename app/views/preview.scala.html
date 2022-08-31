@@ -1,5 +1,25 @@
-@(obj : String)
-@main("msfiles") {
+@import fr.inrae.metabolomics.p2m2.format.GenericP2M2
+@(obj : GenericP2M2)
+@main("Merge all results file (preview)") {
+<table>
+    <thead>
+    <tr>
+        @for(header <- GenericP2M2.HeaderField.values.toSeq) {
+            <th colspan="">@header</th>
+        }
+    </tr>
+    </thead>
+    <tbody>
+    @for(values <- obj.values) {
+    <tr>
+        @for(header <- GenericP2M2.HeaderField.values.toSeq) {
+            <td>@values.get(header)</td>
+        }
+    </tr>
+    }
 
-@obj
+    </tbody>
+</table>
+
+
 }

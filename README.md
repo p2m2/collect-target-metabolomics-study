@@ -15,6 +15,11 @@ sbt
 h2-browser
 ```
 
+# Docker
+
+- docker-compose build
+- docker-compose up -d
+
 ## utilisation Slick/Evolution/H2
 - Ajout d'un DAO : MassSpectrometryFile
 - Ajout d unc conf pour acceder à H2

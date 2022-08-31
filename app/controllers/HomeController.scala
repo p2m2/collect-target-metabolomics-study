@@ -1,12 +1,16 @@
 package controllers
 
+import akka.stream.scaladsl.{Source, StreamConverters}
+import akka.util.ByteString
 import daos.MassSpectrometryFileDAO
-import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSet}
+import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSet, MassSpectrometryResultSetFactory}
 import fr.inrae.metabolomics.p2m2.parser._
+import fr.inrae.metabolomics.p2m2.stream.ExportData
 import models.MassSpectrometryFile
+import play.api.http.HttpEntity
 import play.api.mvc._
-import upickle.default._
 
+import java.io.ByteArrayInputStream
 import java.nio.file.Paths
 import javax.inject._
 import scala.concurrent.ExecutionContext
@@ -32,20 +36,23 @@ class HomeController @Inject()(
     Ok(views.html.index())
   }
 
-  def importMassSpectrometryFile(information: String="") = Action {
-      Ok(views.html.importMassSpectrometryFile(information))
+  def importMassSpectrometryFile() = Action.async {
+    msfiles.all().map {
+      msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+    } recover {
+      case e => Ok(e.getMessage)
+    }
   }
 
-  def upload() = Action(parse.multipartFormData) {
+  def upload() = Action(parse.multipartFormData).async {
     request => {
-      /*
-      println(request.body.asFormUrlEncoded)
-      val formData = request.body.asMultipartFormData
-      println(formData)
-      Ok(views.html.importMassSpectrometryFile())*/
-      request.body
-        .file("massSpectrometryFile")
+
+      /*Ok(views.html.importMassSpectrometryFile())*/
+      request
+        .body
+        .files
         .map { msfile =>
+          println(msfile)
           // only get the last part of the filename
           // otherwise someone can send a path like ../../home/foo/bar.txt to write to other files on the system
           val filename    = Paths.get(msfile.filename).getFileName
@@ -61,72 +68,61 @@ class HomeController @Inject()(
           val ms : Option[MassSpectrometryResultSet] = ParserManager.buildMassSpectrometryObject(s"/tmp/$filename")
           ms.map {
             x => {
-          /**
-           * ================ TODO =====================
-           * Utiliser upickle pour serialiser les types GCMS,OpenLabCDS,...
-           *
-           * GCMS.HeaderFileField.HeaderFileField dit etre egalement seriaiser etc....
-           * à intégrer dans p2mtools ?
-           *
-              val rw1: ReadWriter[GCMS] = macroRW
-              val rw2: ReadWriter[OpenLabCDS] = macroRW
-              val rw3: ReadWriter[QuantifyCompoundSummaryReportMassLynx] = macroRW
-              val rw4: ReadWriter[Xcalibur] = macroRW
-              val rw : ReadWriter[MassSpectrometryResultSet]  = ReadWriter.merge(rw1,rw2,rw3,rw4)
-
-              msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=write(x)(rw),
-                className = x.getClass.getSimpleName))
-
-           */
-             println(x.getClass.getSimpleName)
-             msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=x.toString,
+            val stringifyMs = MassSpectrometryResultSetFactory.stringify(x)
+             msfiles.insert(MassSpectrometryFile(name=filename.toString,fileContent=stringifyMs,
                className = x.getClass.getSimpleName))
             }
-
           }
-
-          Ok(views.html.importMassSpectrometryFile(information))
         }
-        .getOrElse {
-          println("================  ERREUR ==================")
-          Redirect(routes.HomeController.index()).flashing("error" -> "Missing file")
-        }
-      }
-    }
-
-  def preview() = Action.async {
-    msfiles.all().map {
-      case msfiles: Seq[MassSpectrometryFile] =>
-        val obj : GenericP2M2 =
-          msfiles
-            .map( (msf : MassSpectrometryFile) => {
-              /**
-               * TODO Ne fonctionne pas
-               *
-               * Utiliser la serialisation upicle pour deserialiser un object provenant de la base et creer à nouveau l objet d origine (GCMS, etc...)
-               */
-              val clazz = Class.forName(msf.className)
-              val instance = clazz.getDeclaredConstructor().newInstance()
-              instance.asInstanceOf[GenericP2M2]
-             // val rw: ReadWriter[instance.type] = macroRW
-              //read[instance.type](msf.fileContent)(rw)
-              //val stock = ois.readObject.asInstanceOf[Stock]
-            })
-            /** TODO On doit  la fin faire la conversion GenericP2M2 et faire l affichage du preview !!!! */
-          .foldLeft(GenericP2M2(Seq()))( (accumulator,v) => accumulator +v)
-
-        Ok(views.html.preview(obj.toString))
-    } recover {
-      case e => Ok(e.getMessage)
-    }
-  }
-  def displayTableWithMassSpectrometryFiles() = Action.async {
         msfiles.all().map {
-          case msfiles: Seq[MassSpectrometryFile] => Ok(views.html.msfiles(msfiles))
+          msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
         } recover {
           case e => Ok(e.getMessage)
         }
       }
+    }
+  def delete(idMsFile : Long): Action[AnyContent] = Action.async {
+    implicit request: Request[AnyContent] => {
+      msfiles.delete(idMsFile)
+      msfiles.all().map {
+        msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+      } recover {
+        case e => Ok(e.getMessage)
+      }
+    }
+  }
 
+  def clean() : Action[AnyContent] = Action.async {
+    msfiles.clean()
+    msfiles.all().map {
+      msFiles: Seq[MassSpectrometryFile] => Ok(views.html.importMassSpectrometryFile(msFiles))
+    } recover {
+      case e => Ok(e.getMessage)
+    }
+  }
+
+  def exportXLS() : Action[AnyContent] = Action.async {
+    msfiles.getMergeGenericP2M2().map {
+      (obj: GenericP2M2) => {
+        val bs = ExportData.xlsP2M2(obj)
+        val source: Source[ByteString, _] = StreamConverters.fromInputStream(() => new ByteArrayInputStream(bs.toByteArray))
+        val contentLength : Option[Long] = Some(bs.size())
+        Result(
+          header = ResponseHeader(200, Map.empty),
+          body = HttpEntity.Streamed(source, contentLength,Some("application/vnd.ms-excel"))
+        )
+      }
+    } recover {
+      case e => Ok(e.getMessage)
+    }
+  }
+
+  def preview(): Action[AnyContent] = Action.async {
+    msfiles.getMergeGenericP2M2().map {
+      (obj : GenericP2M2) => Ok(views.html.preview(obj))
+    } recover {
+      case e => Ok(e.getMessage)
+    }
+  }
 
 }

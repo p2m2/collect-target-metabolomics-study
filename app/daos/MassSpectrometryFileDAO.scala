@@ -1,5 +1,7 @@
 package daos
 
+import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSetFactory}
+
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
 import models.MassSpectrometryFile
@@ -21,12 +23,31 @@ class MassSpectrometryFileDAO @Inject()
 
   def all(): Future[Seq[MassSpectrometryFile]] = db.run(TableQuery[MassSpectrometryFileTable].result)
 
+  def getMergeGenericP2M2() : Future[GenericP2M2] = {
+    all().map {
+      msfiles: Seq[MassSpectrometryFile] =>
+        val obj: GenericP2M2 =
+          msfiles
+            .flatMap((msf: MassSpectrometryFile) => {
+              MassSpectrometryResultSetFactory.build(msf.fileContent)
+            }).foldLeft(GenericP2M2(Seq()))((accumulator, v) => accumulator + v)
+        obj
+    }
+  }
   def insert(msfile: MassSpectrometryFile): Future[Unit] = {
     db.run(TableQuery[MassSpectrometryFileTable] += msfile).map { _ => () }
   }
   def update(msfile: MassSpectrometryFile): Future[Unit] = ???
 
+  def delete(idMsFile : Long) : Future[Unit] = {
+    val query = TableQuery[MassSpectrometryFileTable].filter( _.id === idMsFile)
+    val action = query.delete
+    db.run(action).map( _ => ())
+  }
 
+  def clean() : Future[Unit] = {
+    db.run(TableQuery[MassSpectrometryFileTable].delete).map( _ => ())
+  }
   private class MassSpectrometryFileTable(tag: Tag)
     extends Table[MassSpectrometryFile](tag, "MassSpectrometryFile") {
 
