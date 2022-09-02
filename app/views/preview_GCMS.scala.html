@@ -1,0 +1,38 @@
+@**************************************
+* GCMS preview page.                  *
+*                                     *
+* @ob The GCMS information to display *
+**************************************@
+
+@import fr.inrae.metabolomics.p2m2.format._
+@import fr.inrae.metabolomics.p2m2.parser.ParserUtils
+
+@(obj : GCMS)
+@main("GCMS preview") {
+<h2>Header</h2>
+    <table>
+    @for(header <- GCMS.HeaderFileField.values.toSeq) {
+        <tr>
+            <td><b>@ParserUtils.toString(header)</b></td>
+            <td>@obj.header.get(header)</td>
+        </tr>
+    }
+    </table>
+
+<h2>Results</h2>
+
+<table>
+    <tr>
+    @for(header <- GCMS.HeaderField.values.toSeq) {
+        <td><b>@ParserUtils.toString(header)</b></td>
+    }
+    </tr>
+    @for(entry <- obj.msQuantitativeResults) {
+     <tr>
+        @for(header <- GCMS.HeaderField.values.toSeq) {
+            <td>@entry.get(header)</td>
+        }
+     </tr>
+    }
+</table>
+}

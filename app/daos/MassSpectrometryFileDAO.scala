@@ -18,10 +18,14 @@ class MassSpectrometryFileDAO @Inject()
 
   import profile.api._
 
-  def findAll(): Seq[MassSpectrometryFile] = ???
-  def findById(id: String) : MassSpectrometryFile = ???
+  def findById(id: Long) : Future[Option[MassSpectrometryFile]] =
+    db.run(TableQuery[MassSpectrometryFileTable].filter(_.id === id).result).map {
+      case l if l.nonEmpty => Some(l.last)
+      case _ => None
+    }
 
-  def all(): Future[Seq[MassSpectrometryFile]] = db.run(TableQuery[MassSpectrometryFileTable].result)
+  def all(): Future[Seq[MassSpectrometryFile]] =
+    db.run(TableQuery[MassSpectrometryFileTable].result)
 
   def getMergeGenericP2M2() : Future[GenericP2M2] = {
     all().map {

@@ -17,7 +17,7 @@
     @for(msFile <- listMSFiles ) {
     <tr>
         <td>@msFile.id</td>
-        <td>@msFile.name</td>
+        <td><a href="/preview_file/@msFile.id">@msFile.name</a></td>
         <td>@msFile.className</td>
         <td><a href="/delete/@msFile.id"><span class="material-symbols-outlined">delete</span></a></td>
     </tr>
