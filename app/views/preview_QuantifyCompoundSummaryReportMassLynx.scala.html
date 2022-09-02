@@ -1,0 +1,41 @@
+@***********************************************************************
+* QuantifyCompoundSummaryReportMassLynx preview page.                  *
+*                                                                      *
+* @ob The QuantifyCompoundSummaryReportMassLynx information to display *
+************************************************************************@
+
+@import fr.inrae.metabolomics.p2m2.format._
+@import fr.inrae.metabolomics.p2m2.parser.ParserUtils
+
+@(obj : QuantifyCompoundSummaryReportMassLynx)
+@main("QuantifyCompoundSummaryReportMassLynx preview") {
+<h2>Header</h2>
+<table>
+    <tr>
+        <td><b>Printed Date</b></td>
+        <td>@obj.header.dateStr</td>
+    </tr>
+
+</table>
+
+<h2>Results</h2>
+<table>
+    <tr>
+        <td> - </td>
+        @for(header <- QuantifyCompoundSummaryReportMassLynx.HeaderField.values.toSeq) {
+        <td><b>@ParserUtils.toString(header)</b></td>
+        }
+    </tr>
+    @for(entry <- obj.results) {
+        @for(values <- entry._2) {
+        <tr>
+            <td>@entry._1</td>
+            @for(header <- QuantifyCompoundSummaryReportMassLynx.HeaderField.values.toSeq) {
+                <td>@values.get(header)</td>
+            }
+        </tr>
+        }
+    }
+</table>
+
+}

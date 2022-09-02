@@ -11,6 +11,7 @@ GET    /importMSF                  controllers.HomeController.importMassSpectrom
 POST   /upload                     controllers.HomeController.upload()
 GET    /delete/:idMsFileLong       controllers.HomeController.delete(idMsFileLong : Long)
 GET    /preview                    controllers.HomeController.preview()
+GET    /preview_file/:idMsFileLong controllers.HomeController.preview_file(idMsFileLong : Long)
 GET    /clean                      controllers.HomeController.clean()
 GET    /exportXLS                  controllers.HomeController.exportXLS()
 # Map static resources from the /public folder to the /assets URL path
