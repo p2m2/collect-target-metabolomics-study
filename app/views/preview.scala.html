@@ -10,7 +10,7 @@
     </tr>
     </thead>
     <tbody>
-    @for(values <- obj.values) {
+    @for(values <- obj.samples) {
     <tr>
         @for(header <- GenericP2M2.HeaderField.values.toSeq) {
             <td>@values.get(header)</td>
