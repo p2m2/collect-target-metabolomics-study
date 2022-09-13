@@ -3,8 +3,9 @@ package controllers
 import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
 import daos.MassSpectrometryFileDAO
-import fr.inrae.metabolomics.p2m2.format.{GCMS, GenericP2M2, MassSpectrometryResultSet, MassSpectrometryResultSetFactory, OpenLabCDS, QuantifyCompoundSummaryReportMassLynx, Xcalibur}
-import fr.inrae.metabolomics.p2m2.parser._
+import fr.inrae.metabolomics.p2m2.format.MassSpectrometryResultSetFactory
+import fr.inrae.metabolomics.p2m2.format.ms.{GCMS, GenericP2M2, MassSpectrometryResultSet, OpenLabCDS, QuantifyCompoundSummaryReportMassLynx, QuantifySampleSummaryReportMassLynx, Xcalibur}
+import fr.inrae.metabolomics.p2m2.parser.{GCMSParser, OpenLabCDSParser, ParserManager, QuantifySummaryReportMassLynxParser, XcaliburXlsParser}
 import fr.inrae.metabolomics.p2m2.stream.ExportData
 import models.MassSpectrometryFile
 import play.api.http.HttpEntity
@@ -62,7 +63,7 @@ class HomeController @Inject()(
           val information = s"($filename,$fileSize,$contentType)" +
           "<br/>\\n \n nGCMSParser:"+GCMSParser.sniffFile(s"/tmp/$filename") +
           "<br/>OpenLabCDSParser:"+OpenLabCDSParser.sniffFile(s"/tmp/$filename") +
-          "<br/>QuantifyCompoundSummaryReportMassLynxParser:"+QuantifyCompoundSummaryReportMassLynxParser.sniffFile(s"/tmp/$filename") +
+          "<br/>QuantifyCompoundSummaryReportMassLynxParser:"+QuantifySummaryReportMassLynxParser.sniffFile(s"/tmp/$filename") +
           "<br/>XcaliburXlsParser:"+XcaliburXlsParser.sniffFile(s"/tmp/$filename")
 
           val ms : Option[MassSpectrometryResultSet] = ParserManager.buildMassSpectrometryObject(s"/tmp/$filename")

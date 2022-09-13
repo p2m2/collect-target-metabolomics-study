@@ -1,6 +1,7 @@
 package daos
 
-import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSetFactory}
+import fr.inrae.metabolomics.p2m2.format.MassSpectrometryResultSetFactory
+import fr.inrae.metabolomics.p2m2.format.ms.GenericP2M2
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
