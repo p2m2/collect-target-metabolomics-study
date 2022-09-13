@@ -4,7 +4,7 @@
 * @ob The QuantifyCompoundSummaryReportMassLynx information to display *
 ************************************************************************@
 
-@import fr.inrae.metabolomics.p2m2.format._
+@import fr.inrae.metabolomics.p2m2.format.ms._
 @import fr.inrae.metabolomics.p2m2.parser.ParserUtils
 
 @(obj : QuantifyCompoundSummaryReportMassLynx)
@@ -26,7 +26,7 @@
         <td><b>@ParserUtils.toString(header)</b></td>
         }
     </tr>
-    @for(entry <- obj.results) {
+    @for(entry <- obj.resultsByCompound) {
         @for(values <- entry._2) {
         <tr>
             <td>@entry._1</td>
