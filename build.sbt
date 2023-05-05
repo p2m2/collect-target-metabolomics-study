@@ -9,9 +9,9 @@ scalaVersion := "2.13.8"
 
 libraryDependencies ++= Seq(
   guice,
-    "com.github.p2m2" %% "p2m2tools" % "develop-SNAPSHOT" changing(),
-    "com.typesafe.play" %% "play-slick" % "5.0.2",
-    "com.typesafe.play" %% "play-slick-evolutions" % "5.0.2",
+    "com.github.p2m2" %% "p2m2tools" % "0.2.0" changing(),
+    "com.typesafe.play" %% "play-slick" % "5.1.0",
+    "com.typesafe.play" %% "play-slick-evolutions" % "5.1.0",
     "com.h2database" % "h2" % "2.1.214",
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
 )
