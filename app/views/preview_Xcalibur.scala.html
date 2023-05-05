@@ -1,0 +1,46 @@
+@********************************************
+* Xcalibur preview page.                    *
+*                                           *
+* @ob The Xcalibur information to display   *
+*********************************************@
+
+@import fr.inrae.metabolomics.p2m2.format.ms._
+@import fr.inrae.metabolomics.p2m2.parser.ParserUtils
+
+@(obj : Xcalibur)
+@main("Xcalibur preview") {
+<h2>Sheets</h2>
+
+    @for(sheet <- obj.results) {
+    <h3>Header</h3>
+    <table>
+        @for(header <- Xcalibur.HeaderSheetField.values.toSeq) {
+        <tr>
+            <td><b>@ParserUtils.toString(header)</b></td>
+            <td>@sheet.compoundInformationHeader.get(header)</td>
+        </tr>
+        }
+    </table>
+
+    <h3>Results</h3>
+    <table>
+        <tr>
+        @for(header <- Xcalibur.HeaderField.values.toSeq) {
+            <td><b>@ParserUtils.toString(header)</b></td>
+        }
+        </tr>
+        @for(values <- sheet.compoundByInjection) {
+            <tr>
+                @for(header <- Xcalibur.HeaderField.values.toSeq) {
+                    <td>@values.get(header)</td>
+                }
+            </tr>
+        }
+    </table>
+
+    }
+
+
+
+
+}

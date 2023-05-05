@@ -3,8 +3,9 @@ package controllers
 import akka.stream.scaladsl.{Source, StreamConverters}
 import akka.util.ByteString
 import daos.MassSpectrometryFileDAO
-import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSet, MassSpectrometryResultSetFactory}
-import fr.inrae.metabolomics.p2m2.parser._
+import fr.inrae.metabolomics.p2m2.format.MassSpectrometryResultSetFactory
+import fr.inrae.metabolomics.p2m2.format.ms.{GCMS, GenericP2M2, MassSpectrometryResultSet, OpenLabCDS, QuantifyCompoundSummaryReportMassLynx, QuantifySampleSummaryReportMassLynx, Xcalibur}
+import fr.inrae.metabolomics.p2m2.parser.{GCMSParser, OpenLabCDSParser, ParserManager, QuantifySummaryReportMassLynxParser, XcaliburXlsParser}
 import fr.inrae.metabolomics.p2m2.stream.ExportData
 import models.MassSpectrometryFile
 import play.api.http.HttpEntity
@@ -62,7 +63,7 @@ class HomeController @Inject()(
           val information = s"($filename,$fileSize,$contentType)" +
           "<br/>\\n \n nGCMSParser:"+GCMSParser.sniffFile(s"/tmp/$filename") +
           "<br/>OpenLabCDSParser:"+OpenLabCDSParser.sniffFile(s"/tmp/$filename") +
-          "<br/>QuantifyCompoundSummaryReportMassLynxParser:"+QuantifyCompoundSummaryReportMassLynxParser.sniffFile(s"/tmp/$filename") +
+          "<br/>QuantifyCompoundSummaryReportMassLynxParser:"+QuantifySummaryReportMassLynxParser.sniffFile(s"/tmp/$filename") +
           "<br/>XcaliburXlsParser:"+XcaliburXlsParser.sniffFile(s"/tmp/$filename")
 
           val ms : Option[MassSpectrometryResultSet] = ParserManager.buildMassSpectrometryObject(s"/tmp/$filename")
@@ -122,6 +123,21 @@ class HomeController @Inject()(
       (obj : GenericP2M2) => Ok(views.html.preview(obj))
     } recover {
       case e => Ok(e.getMessage)
+    }
+  }
+
+  def preview_file(idMsFile : Long) :  Action[AnyContent] = Action.async {
+    msfiles.findById(idMsFile) map  {
+      case Some(s) => MassSpectrometryResultSetFactory.build(s.fileContent)  match {
+        case Some (obj: GCMS) => Ok (views.html.preview_GCMS (obj) )
+        case Some (obj: OpenLabCDS) => Ok (views.html.preview_OpenLabCDS(obj) )
+        case Some (obj: QuantifyCompoundSummaryReportMassLynx) =>
+          Ok (views.html.preview_QuantifyCompoundSummaryReportMassLynx(obj) )
+        case Some (obj: Xcalibur) => Ok (views.html.preview_Xcalibur(obj) )
+        case None => Ok (s"can not convert string to type [${s.fileContent}]")
+        case _ => Ok (s"can not preview file [id:$idMsFile]")
+        }
+      case None => Ok (s"Can not find Id file  [id:$idMsFile]")
     }
   }
 

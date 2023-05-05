@@ -1,0 +1,38 @@
+@********************************************
+* OpenLabCDS preview page.                  *
+*                                           *
+* @ob The OpenLabCDS information to display *
+*********************************************@
+
+@import fr.inrae.metabolomics.p2m2.format.ms._
+@import fr.inrae.metabolomics.p2m2.parser.ParserUtils
+
+@(obj : OpenLabCDS)
+@main("OpenLabCDS preview") {
+<h2>Header</h2>
+<table>
+    @for(header <- OpenLabCDS.HeaderFileField.values.toSeq) {
+    <tr>
+        <td><b>@ParserUtils.toString(header)</b></td>
+        <td>@obj.header.get(header)</td>
+    </tr>
+    }
+</table>
+
+<h2>Results</h2>
+
+<table>
+    <tr>
+        @for(header <- OpenLabCDS.HeaderField.values.toSeq) {
+        <td><b>@ParserUtils.toString(header)</b></td>
+        }
+    </tr>
+    @for(entry <- obj.results) {
+    <tr>
+        @for(header <- OpenLabCDS.HeaderField.values.toSeq) {
+        <td>@entry.get(header)</td>
+        }
+    </tr>
+    }
+</table>
+}

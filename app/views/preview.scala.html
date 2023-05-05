@@ -1,4 +1,4 @@
-@import fr.inrae.metabolomics.p2m2.format.GenericP2M2
+@import fr.inrae.metabolomics.p2m2.format.ms.GenericP2M2
 @(obj : GenericP2M2)
 @main("Merge all results file (preview)") {
 <table>
@@ -10,7 +10,7 @@
     </tr>
     </thead>
     <tbody>
-    @for(values <- obj.values) {
+    @for(values <- obj.samples) {
     <tr>
         @for(header <- GenericP2M2.HeaderField.values.toSeq) {
             <td>@values.get(header)</td>

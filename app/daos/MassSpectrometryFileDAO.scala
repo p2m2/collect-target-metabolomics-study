@@ -1,6 +1,7 @@
 package daos
 
-import fr.inrae.metabolomics.p2m2.format.{GenericP2M2, MassSpectrometryResultSetFactory}
+import fr.inrae.metabolomics.p2m2.format.MassSpectrometryResultSetFactory
+import fr.inrae.metabolomics.p2m2.format.ms.GenericP2M2
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
@@ -18,10 +19,14 @@ class MassSpectrometryFileDAO @Inject()
 
   import profile.api._
 
-  def findAll(): Seq[MassSpectrometryFile] = ???
-  def findById(id: String) : MassSpectrometryFile = ???
+  def findById(id: Long) : Future[Option[MassSpectrometryFile]] =
+    db.run(TableQuery[MassSpectrometryFileTable].filter(_.id === id).result).map {
+      case l if l.nonEmpty => Some(l.last)
+      case _ => None
+    }
 
-  def all(): Future[Seq[MassSpectrometryFile]] = db.run(TableQuery[MassSpectrometryFileTable].result)
+  def all(): Future[Seq[MassSpectrometryFile]] =
+    db.run(TableQuery[MassSpectrometryFileTable].result)
 
   def getMergeGenericP2M2() : Future[GenericP2M2] = {
     all().map {
